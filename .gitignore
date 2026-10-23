@@ -1,0 +1,14 @@
+# Environment variables and API keys
+.env
+
+# Operating system files
+.DS_Store
+Thumbs.db
+
+# IDE / Editor folders
+.vscode/
+.idea/
+
+# Logs and vendor folders
+*.log
+/vendor/
