@@ -17,6 +17,9 @@ if (session_status() === PHP_SESSION_NONE) {
         body { background-color: #f8f9fa; }
         .navbar-brand { font-weight: 700; color: #0d6efd !important; }
     </style>
+        <!-- Leaflet.js Map CSS & JS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </head>
 <body class="d-flex flex-column min-vh-100">
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">

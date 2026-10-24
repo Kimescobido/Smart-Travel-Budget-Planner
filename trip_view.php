@@ -3,6 +3,7 @@ require_once __DIR__ . '/config/db.php';
 require_once __DIR__ . '/includes/auth_check.php';
 require_once __DIR__ . '/api/weather.php';
 require_once __DIR__ . '/api/currency.php';
+require_once __DIR__ . '/api/photos.php';
 requireLogin();
 
 $trip_id = $_GET['id'] ?? null;
@@ -26,10 +27,13 @@ if (!$trip) {
     exit;
 }
 
-// 1. External API #1: Fetch live weather for destination
+// 1. External API #1: OpenWeatherMap
 $weather = getDestinationWeather($trip['destination_city']);
 
-// 2. Handle adding an activity/expense with API #2 (Currency Conversion)
+// 2. External API #4: Unsplash Photo
+$photo = getDestinationPhoto($trip['destination_city']);
+
+// 3. Handle adding an activity/expense with API #2 (Currency Conversion)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_activity'])) {
     $day_number = intval($_POST['day_number'] ?? 1);
     $activity_title = trim($_POST['activity_title'] ?? '');
@@ -38,7 +42,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_activity'])) {
     $notes = trim($_POST['notes'] ?? '');
 
     if (!empty($activity_title)) {
-        // Automatically convert expense to trip's base currency using ExchangeRate API
         $cost_base = convertCurrency($cost_local, $local_currency, $trip['base_currency']);
 
         $insertItem = $pdo->prepare("INSERT INTO itinerary_items (trip_id, day_number, activity_title, cost_local, local_currency, cost_base, notes) VALUES (:tid, :day, :title, :cost_l, :curr_l, :cost_b, :notes)");
@@ -70,7 +73,7 @@ $itemsStmt = $pdo->prepare("SELECT * FROM itinerary_items WHERE trip_id = :tid O
 $itemsStmt->execute(['tid' => $trip['id']]);
 $items = $itemsStmt->fetchAll();
 
-// Calculate total spent in base currency
+// Calculate total spent
 $totalSpent = 0;
 foreach ($items as $item) {
     $totalSpent += floatval($item['cost_base']);
@@ -81,17 +84,24 @@ $page_title = $trip['title'];
 require_once __DIR__ . '/includes/header.php';
 ?>
 
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <div>
-        <h2 class="mb-0"><?= htmlspecialchars($trip['title']) ?></h2>
-        <span class="badge bg-secondary"><i class="bi bi-geo-alt"></i> <?= htmlspecialchars($trip['destination_city']) ?></span>
-        <span class="text-muted small ms-2">
-            <?= date('M d, Y', strtotime($trip['start_date'])) ?> to <?= date('M d, Y', strtotime($trip['end_date'])) ?>
-        </span>
-    </div>
-    <div>
-        <a href="trip_edit.php?id=<?= $trip['id'] ?>" class="btn btn-outline-secondary btn-sm"><i class="bi bi-pencil"></i> Edit Trip</a>
-        <a href="trips.php" class="btn btn-outline-dark btn-sm"><i class="bi bi-arrow-left"></i> Back</a>
+<!-- API #4: Unsplash Cover Image Banner -->
+<div class="position-relative text-white rounded-3 overflow-hidden shadow-sm mb-4" style="height: 240px; background: url('<?= htmlspecialchars($photo['url']) ?>') center/cover no-repeat;">
+    <div class="position-absolute top-0 start-0 w-100 h-100" style="background: rgba(0,0,0,0.55);"></div>
+    <div class="position-relative h-100 d-flex flex-column justify-content-between p-4">
+        <div class="d-flex justify-content-between align-items-start">
+            <span class="badge bg-primary fs-6"><i class="bi bi-geo-alt"></i> <?= htmlspecialchars($trip['destination_city']) ?></span>
+            <div>
+                <a href="trip_edit.php?id=<?= $trip['id'] ?>" class="btn btn-sm btn-light"><i class="bi bi-pencil"></i> Edit</a>
+                <a href="trips.php" class="btn btn-sm btn-outline-light ms-1"><i class="bi bi-arrow-left"></i> Back</a>
+            </div>
+        </div>
+        <div>
+            <h1 class="display-6 fw-bold mb-1 text-white"><?= htmlspecialchars($trip['title']) ?></h1>
+            <p class="mb-0 text-white-50 small">
+                <i class="bi bi-calendar-event"></i> <?= date('M d, Y', strtotime($trip['start_date'])) ?> &rarr; <?= date('M d, Y', strtotime($trip['end_date'])) ?>
+                • Photo via <a href="<?= htmlspecialchars($photo['photographer_url']) ?>" target="_blank" class="text-white-50 text-decoration-underline"><?= htmlspecialchars($photo['photographer']) ?></a> (Unsplash API)
+            </p>
+        </div>
     </div>
 </div>
 
@@ -114,7 +124,7 @@ require_once __DIR__ . '/includes/header.php';
                 </div>
             <?php else: ?>
                 <div class="text-muted small mt-2">
-                    <i class="bi bi-exclamation-triangle"></i> Weather data unavailable. Check city name or API key activation.
+                    <i class="bi bi-exclamation-triangle"></i> Weather data unavailable for this city.
                 </div>
             <?php endif; ?>
         </div>
@@ -147,6 +157,17 @@ require_once __DIR__ . '/includes/header.php';
     </div>
 </div>
 
+<!-- API #3: Interactive Map Card -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+        <h6 class="mb-0"><i class="bi bi-map text-primary"></i> Interactive Destination Map (API #3 - OpenStreetMap & Nominatim)</h6>
+        <span class="badge bg-secondary-subtle text-secondary border">Leaflet.js</span>
+    </div>
+    <div class="card-body p-0">
+        <div id="trip-map" style="height: 280px; width: 100%; border-radius: 0 0 0.375rem 0.375rem;"></div>
+    </div>
+</div>
+
 <div class="row">
     <!-- Itinerary Items Table -->
     <div class="col-lg-8">
@@ -176,7 +197,7 @@ require_once __DIR__ . '/includes/header.php';
                                         <td><span class="badge bg-primary">Day <?= htmlspecialchars($item['day_number']) ?></span></td>
                                         <td><strong><?= htmlspecialchars($item['activity_title']) ?></strong></td>
                                         <td><?= htmlspecialchars($item['local_currency']) ?> <?= number_format($item['cost_local'], 2) ?></td>
-                                        <td><strong class="text-primary"><?= htmlspecialchars($trip['base_currency']) ?> <?= number_format($item['cost_base'], 2) ?></strong></td>
+                                        <td><strong class="text-primary"><?= htmlspecialchars($trip['base_currency']) ?> <?= number_format($item['cost_cost_base'] ?? $item['cost_base'], 2) ?></strong></td>
                                         <td class="text-muted small"><?= htmlspecialchars($item['notes'] ?? '-') ?></td>
                                         <td>
                                             <a href="trip_view.php?id=<?= $trip['id'] ?>&delete_item=<?= $item['id'] ?>" class="text-danger small" onclick="return confirm('Delete this item?');"><i class="bi bi-trash"></i></a>
@@ -234,5 +255,47 @@ require_once __DIR__ . '/includes/header.php';
         </div>
     </div>
 </div>
+
+<!-- API #3 Script: Geocode city using Nominatim & render Leaflet Map -->
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const cityName = <?= json_encode($trip['destination_city']) ?>;
+    const mapElement = document.getElementById('trip-map');
+
+    if (!mapElement) return;
+
+    // Default coordinates (Tokyo) as fallback
+    let lat = 35.6762;
+    let lon = 139.6503;
+
+    // Geocode destination city using OpenStreetMap Nominatim API
+    fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(cityName)}&limit=1`)
+        .then(response => response.json())
+        .then(data => {
+            if (data && data.length > 0) {
+                lat = parseFloat(data[0].lat);
+                lon = parseFloat(data[0].lon);
+            }
+            initMap(lat, lon, cityName);
+        })
+        .catch(() => {
+            initMap(lat, lon, cityName);
+        });
+
+    function initMap(latitude, longitude, label) {
+        const map = L.map('trip-map').setView([latitude, longitude], 12);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+
+        L.marker([latitude, longitude])
+            .addTo(map)
+            .bindPopup(`<b>${label}</b><br>Your travel destination`)
+            .openPopup();
+    }
+});
+</script>
 
 <?php require_once __DIR__ . '/includes/footer.php'; ?>
