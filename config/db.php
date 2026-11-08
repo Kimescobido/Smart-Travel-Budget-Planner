@@ -25,10 +25,23 @@ function loadEnv($path)
 // Load .env from project root
 loadEnv(__DIR__ . '/../.env');
 
-$host = getenv('DB_HOST') ?: 'localhost';
-$dbname = getenv('DB_NAME') ?: 'travel_planner_db';
-$username = getenv('DB_USER') ?: 'root';
-$password = getenv('DB_PASS') ?: '';
+// Check if running locally (XAMPP) or live online (InfinityFree)
+$is_local = in_array($_SERVER['SERVER_NAME'] ?? '', ['localhost', '127.0.0.1', '::1']);
+
+if ($is_local) {
+    // Localhost XAMPP Settings
+    $host = getenv('DB_HOST') ?: 'localhost';
+    $dbname = getenv('DB_NAME') ?: 'travel_planner_db';
+    $username = getenv('DB_USER') ?: 'root';
+    $password = getenv('DB_PASS') ?: '';
+} else {
+    // InfinityFree Live Online Settings
+    $host = getenv('DB_HOST') ?: 'sql203.infinityfree.com';
+    $dbname = getenv('DB_NAME') ?: 'if0_43326827_travel_db';
+    $username = getenv('DB_USER') ?: 'if0_43326827';
+    // IMPORTANT: Replace the text inside quotes below with your real InfinityFree password!
+    $password = getenv('DB_PASS') ?: 'Kimescobido29';
+}
 
 try {
     $pdo = new PDO("mysql:host={$host};dbname={$dbname};charset=utf8mb4", $username, $password, [
