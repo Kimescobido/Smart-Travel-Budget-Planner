@@ -10,7 +10,7 @@ function convertCurrency($amount, $fromCurrency, $toCurrency)
         return floatval($amount);
     }
 
-    $apiKey = getenv('EXCHANGE_RATE_API_KEY');
+    $apiKey = getenv('EXCHANGE_RATE_API_KEY') ?: '8f71d44b42a4a6dbc77deaf8';
     if (empty($apiKey)) {
         return floatval($amount); // fallback
     }

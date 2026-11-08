@@ -7,7 +7,7 @@ require_once __DIR__ . '/../config/db.php';
  */
 function getDestinationWeather($city)
 {
-    $apiKey = getenv('OPENWEATHER_API_KEY');
+    $apiKey = getenv('OPENWEATHER_API_KEY') ?: '9eb558168ef7f1dc6915b700e015af95';
     if (empty($apiKey) || empty($city)) {
         return null;
     }

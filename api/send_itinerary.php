@@ -22,13 +22,13 @@ if (!$trip) {
     die("Trip not found or unauthorized.");
 }
 
-// Fetch user email
+// Fetch user email dynamically from database
 $userStmt = $pdo->prepare("SELECT email, name FROM users WHERE id = :uid");
 $userStmt->execute(['uid' => $trip['user_id']]);
 $user = $userStmt->fetch();
 
-$recipientEmail = $user['email'] ?? $_SESSION['user_email'];
-$recipientName = $user['name'] ?? $_SESSION['user_name'];
+$recipientEmail = $user['email'] ?? ($_SESSION['user_email'] ?? '');
+$recipientName = $user['name'] ?? ($_SESSION['user_name'] ?? 'Traveler');
 
 // Fetch all itinerary items
 $itemsStmt = $pdo->prepare("SELECT * FROM itinerary_items WHERE trip_id = :tid ORDER BY day_number ASC, id ASC");
@@ -92,14 +92,15 @@ $emailContent = '
 </body>
 </html>';
 
-$apiKey = getenv('RESEND_API_KEY');
+// Active Resend API Key
+$apiKey = getenv('RESEND_API_KEY') ?: ($_SERVER['RESEND_API_KEY'] ?? ($_ENV['RESEND_API_KEY'] ?? ''));
 
 if (empty($apiKey)) {
     header("Location: ../trip_view.php?id=" . $trip['id'] . "&email_status=no_key");
     exit;
 }
 
-// Call Resend REST API via cURL
+// Call Resend REST API dynamically for the registered user
 $postData = [
     'from' => 'Smart Travel Planner <onboarding@resend.dev>',
     'to' => [$recipientEmail],
@@ -123,7 +124,6 @@ curl_close($ch);
 if ($httpCode >= 200 && $httpCode < 300) {
     header("Location: ../trip_view.php?id=" . $trip['id'] . "&email_status=success");
 } else {
-    // If recipient email isn't verified in testing, Resend returns an error
     header("Location: ../trip_view.php?id=" . $trip['id'] . "&email_status=error");
 }
 exit;
