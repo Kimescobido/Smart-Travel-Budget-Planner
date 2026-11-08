@@ -23,12 +23,13 @@ function loadEnv($path)
 
 loadEnv(__DIR__ . '/../.env');
 
-// Read from Render environment variables or fallbacks
-$host = getenv('DB_HOST') ?: 'mysql-d262d7d-kimescobido30-1dde.j.aivencloud.com';
-$port = getenv('DB_PORT') ?: '26777';
-$dbname = getenv('DB_NAME') ?: 'defaultdb';
-$username = getenv('DB_USER') ?: 'avnadmin';
-$password = getenv('DB_PASS') ?: '';
+
+// Read from any available environment source (Render passes them in $_SERVER and $_ENV)
+$host = $_ENV['DB_HOST'] ?? $_SERVER['DB_HOST'] ?? getenv('DB_HOST') ?: 'mysql-d262d7d-kimescobido30-1dde.j.aivencloud.com';
+$port = $_ENV['DB_PORT'] ?? $_SERVER['DB_PORT'] ?? getenv('DB_PORT') ?: '26777';
+$dbname = $_ENV['DB_NAME'] ?? $_SERVER['DB_NAME'] ?? getenv('DB_NAME') ?: 'defaultdb';
+$username = $_ENV['DB_USER'] ?? $_SERVER['DB_USER'] ?? getenv('DB_USER') ?: 'avnadmin';
+$password = $_ENV['DB_PASS'] ?? $_SERVER['DB_PASS'] ?? getenv('DB_PASS') ?: '';
 
 try {
     // Notice: port is explicitly specified here!
