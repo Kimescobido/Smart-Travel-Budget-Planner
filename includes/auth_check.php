@@ -10,10 +10,12 @@ if (session_status() === PHP_SESSION_NONE) {
 function requireLogin()
 {
     if (!isset($_SESSION['user_id'])) {
-        // Find project root path dynamically
-        $script_dir = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME']));
-        $root_path = (strpos($_SERVER['REQUEST_URI'], '/admin') !== false) ? dirname($script_dir) : ($script_dir === '/' ? '' : $script_dir);
-        header("Location: " . $root_path . "/login.php?error=unauthorized");
+        $uri = $_SERVER['REQUEST_URI'] ?? '';
+        if (strpos($uri, '/api/') !== false || strpos($uri, '/admin/') !== false) {
+            header("Location: ../login.php?error=unauthorized");
+        } else {
+            header("Location: login.php?error=unauthorized");
+        }
         exit;
     }
 }
