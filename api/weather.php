@@ -7,7 +7,11 @@ require_once __DIR__ . '/../config/db.php';
  */
 function getDestinationWeather($city)
 {
-    $apiKey = getenv('OPENWEATHER_API_KEY') ?: ($_SERVER['OPENWEATHER_API_KEY'] ?? ($_ENV['OPENWEATHER_API_KEY'] ?? '9eb558168ef7f1dc6913b700e0158f95'));
+    $apiKey = getenv('OPENWEATHER_API_KEY') ?: ($_SERVER['OPENWEATHER_API_KEY'] ?? ($_ENV['OPENWEATHER_API_KEY'] ?? ''));
+    // If empty or if set to the old typo key, use the verified active key
+    if (empty($apiKey) || $apiKey === '9eb558168ef7f1dc6915b700e015af95') {
+        $apiKey = '9eb558168ef7f1dc6913b700e0158f95';
+    }
     if (empty($apiKey) || empty($city)) {
         return null;
     }
