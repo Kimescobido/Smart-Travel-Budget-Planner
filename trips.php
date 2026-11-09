@@ -22,7 +22,7 @@ require_once __DIR__ . '/includes/header.php';
     <div class="card p-5 text-center border-0 shadow-sm">
         <i class="bi bi-map text-muted" style="font-size: 3rem;"></i>
         <h4 class="mt-3">No trips found</h4>
-        <p class="text-muted">You haven't created any travel itineraries yet.</p>
+        <p class="text-muted">You haven't created any travel logs yet.</p>
         <div>
             <a href="trip_create.php" class="btn btn-primary">Create Your First Trip</a>
         </div>
@@ -53,7 +53,7 @@ require_once __DIR__ . '/includes/header.php';
                         </p>
                     </div>
                     <div class="card-footer bg-white border-0 pt-0 d-flex justify-content-between">
-                        <a href="trip_view.php?id=<?= $trip['id'] ?>" class="btn btn-sm btn-outline-primary">View Itinerary</a>
+                        <a href="trip_view.php?id=<?= $trip['id'] ?>" class="btn btn-sm btn-outline-primary">View Travel Log</a>
                         <div>
                             <a href="trip_edit.php?id=<?= $trip['id'] ?>" class="btn btn-sm btn-outline-secondary"
                                 title="Edit"><i class="bi bi-pencil"></i></a>

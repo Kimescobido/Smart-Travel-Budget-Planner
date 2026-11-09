@@ -57,7 +57,7 @@ require_once __DIR__ . '/includes/header.php';
         <div class="card shadow-sm border-0">
             <div class="card-body p-4">
                 <h3 class="card-title text-center mb-3">Create an Account</h3>
-                <p class="text-muted text-center small mb-4">Start planning your dream itineraries</p>
+                <p class="text-muted text-center small mb-4">Start planning your dream travel logs</p>
 
                 <?php if ($error): ?>
                     <div class="alert alert-danger py-2 small">

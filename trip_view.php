@@ -238,7 +238,7 @@ require_once __DIR__ . '/includes/header.php';
     <div class="col-lg-8">
         <div class="card border-0 shadow-sm mb-4">
             <div class="card-header bg-white py-3">
-                <h5 class="mb-0"><i class="bi bi-list-check"></i> Itinerary & Expenses</h5>
+                <h5 class="mb-0"><i class="bi bi-list-check"></i> Travel Log & Expenses</h5>
             </div>
             <div class="card-body">
                 <?php if (empty($items)): ?>

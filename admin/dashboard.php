@@ -75,7 +75,7 @@ require_once __DIR__ . '/../includes/header.php';
         <div class="card border-0 shadow-sm p-3 bg-white h-100 border-start border-info border-4">
             <div class="d-flex justify-content-between align-items-center">
                 <div>
-                    <h6 class="text-muted mb-1 text-uppercase small">Itinerary Items</h6>
+                    <h6 class="text-muted mb-1 text-uppercase small">Travel Log Items</h6>
                     <h2 class="mb-0 fw-bold text-info">
                         <?= number_format($totalActivities) ?>
                     </h2>
@@ -94,7 +94,7 @@ require_once __DIR__ . '/../includes/header.php';
     <div class="col-lg-8">
         <div class="card border-0 shadow-sm">
             <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
-                <h5 class="mb-0"><i class="bi bi-globe-americas text-primary"></i> All Platform Itineraries</h5>
+                <h5 class="mb-0"><i class="bi bi-globe-americas text-primary"></i> All Platform Travel Logs</h5>
                 <span class="badge bg-secondary">
                     <?= count($allTrips) ?> Total
                 </span>

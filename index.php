@@ -7,8 +7,8 @@ require_once __DIR__ . '/includes/header.php';
     <div class="container-fluid py-3">
         <h1 class="display-6 fw-bold text-dark">Plan Your Next Adventure Smarter ✈️</h1>
         <p class="col-md-8 fs-6 text-muted">
-            Create custom travel itineraries, track multi-currency budgets in real-time, preview live destination
-            weather forecasts, and email complete schedules to yourself with a single click.
+            Create custom travel logs, track multi-currency budgets in real-time, preview live destination
+            weather forecasts, and view rich Wikipedia destination guides with a single click.
         </p>
         <?php if (!isset($_SESSION['user_id'])): ?>
             <a href="register.php" class="btn btn-primary btn-lg">Get Started Free</a>
@@ -44,10 +44,10 @@ require_once __DIR__ . '/includes/header.php';
     <div class="col-md-4">
         <div class="card h-100 border-0 shadow-sm p-3">
             <div class="card-body">
-                <i class="bi bi-envelope-check text-primary fs-1 mb-2"></i>
-                <h5 class="card-title">Email Itinerary Export</h5>
-                <p class="card-text text-muted small">One-click itinerary dispatch sends clean, formatted schedules
-                    directly to your email inbox.</p>
+                <i class="bi bi-book text-success fs-1 mb-2"></i>
+                <h5 class="card-title">Wikipedia Destination Guides</h5>
+                <p class="card-text text-muted small">Explore instant destination insights, summaries, and overviews
+                    powered by Wikipedia REST API.</p>
             </div>
         </div>
     </div>
