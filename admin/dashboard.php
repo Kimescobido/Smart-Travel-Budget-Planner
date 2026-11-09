@@ -138,7 +138,7 @@ require_once __DIR__ . '/../includes/header.php';
                                         <td>
                                             <a href="../trip_view.php?id=<?= $t['id'] ?>" class="btn btn-sm btn-outline-primary"
                                                 title="View"><i class="bi bi-eye"></i></a>
-                                            <a href="../trip_delete.php?id=<?= $t['id'] ?>"
+                                            <a href="../trip_delete.php?id=<?= $t['id'] ?>&from_admin=1"
                                                 class="btn btn-sm btn-outline-danger" title="Moderate/Delete"
                                                 onclick="return confirm('As admin, are you sure you want to delete this trip?');"><i
                                                     class="bi bi-trash"></i></a>

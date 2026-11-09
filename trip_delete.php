@@ -4,6 +4,7 @@ require_once __DIR__ . '/includes/auth_check.php';
 requireLogin();
 
 $trip_id = $_GET['id'] ?? null;
+$from_admin = isset($_GET['from_admin']);
 
 if ($trip_id) {
     if ($_SESSION['user_role'] === 'admin') {
@@ -15,5 +16,9 @@ if ($trip_id) {
     }
 }
 
-header("Location: trips.php");
+if ($from_admin && ($_SESSION['user_role'] ?? '') === 'admin') {
+    header("Location: admin/dashboard.php");
+} else {
+    header("Location: trips.php");
+}
 exit;

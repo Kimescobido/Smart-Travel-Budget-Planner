@@ -2,6 +2,16 @@
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
+
+// Dynamically determine project root URL (handles localhost subfolders as well as Render root)
+$script_name = $_SERVER['SCRIPT_NAME'] ?? '';
+if (strpos($script_name, '/admin/') !== false) {
+    $base_dir = dirname(dirname($script_name));
+} else {
+    $base_dir = dirname($script_name);
+}
+$base_dir = str_replace('\\', '/', $base_dir);
+$base_url = rtrim($base_dir, '/');
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -17,14 +27,14 @@ if (session_status() === PHP_SESSION_NONE) {
         body { background-color: #f8f9fa; }
         .navbar-brand { font-weight: 700; color: #0d6efd !important; }
     </style>
-        <!-- Leaflet.js Map CSS & JS -->
+    <!-- Leaflet.js Map CSS & JS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </head>
 <body class="d-flex flex-column min-vh-100">
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container">
-            <a class="navbar-brand text-primary" href="/API%20Maam%20Leonie/index.php">
+            <a class="navbar-brand text-primary" href="<?= $base_url ?>/index.php">
                 <i class="bi bi-geo-alt-fill"></i> Smart Travel Planner
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navContent">
@@ -33,18 +43,18 @@ if (session_status() === PHP_SESSION_NONE) {
             <div class="collapse navbar-collapse" id="navContent">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                     <li class="nav-item">
-                        <a class="nav-link" href="/API%20Maam%20Leonie/index.php">Home</a>
+                        <a class="nav-link" href="<?= $base_url ?>/index.php">Home</a>
                     </li>
                     <?php if (isset($_SESSION['user_id'])): ?>
                         <li class="nav-item">
-                            <a class="nav-link" href="/API%20Maam%20Leonie/trips.php">My Trips</a>
+                            <a class="nav-link" href="<?= $base_url ?>/trips.php">My Trips</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="/API%20Maam%20Leonie/trip_create.php">New Trip</a>
+                            <a class="nav-link" href="<?= $base_url ?>/trip_create.php">New Trip</a>
                         </li>
                         <?php if (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin'): ?>
                             <li class="nav-item">
-                                <a class="nav-link text-warning" href="/API%20Maam%20Leonie/admin/dashboard.php">
+                                <a class="nav-link text-warning" href="<?= $base_url ?>/admin/dashboard.php">
                                     <i class="bi bi-shield-lock"></i> Admin Dashboard
                                 </a>
                             </li>
@@ -58,19 +68,19 @@ if (session_status() === PHP_SESSION_NONE) {
                                 <i class="bi bi-person-circle"></i> <?= htmlspecialchars($_SESSION['user_name'] ?? 'User') ?>
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end">
-                                <li><a class="dropdown-item text-danger" href="/API%20Maam%20Leonie/logout.php"><i class="bi bi-box-arrow-right"></i> Logout</a></li>
+                                <li><a class="dropdown-item text-danger" href="<?= $base_url ?>/logout.php"><i class="bi bi-box-arrow-right"></i> Logout</a></li>
                             </ul>
                         </li>
                     <?php else: ?>
                         <li class="nav-item">
-                            <a class="nav-link" href="/API%20Maam%20Leonie/login.php">Login</a>
+                            <a class="nav-link" href="<?= $base_url ?>/login.php">Login</a>
                         </li>
                         <li class="nav-item">
-                            <a class="btn btn-primary btn-sm ms-lg-2" href="/API%20Maam%20Leonie/register.php">Register</a>
+                            <a class="btn btn-primary btn-sm ms-lg-2" href="<?= $base_url ?>/register.php">Register</a>
                         </li>
                     <?php endif; ?>
                 </ul>
             </div>
         </div>
     </nav>
-    <main class="container my-4 flex-grow-1"></main>
+    <main class="container my-4 flex-grow-1">
