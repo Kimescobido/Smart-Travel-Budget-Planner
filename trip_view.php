@@ -4,6 +4,7 @@ require_once __DIR__ . '/includes/auth_check.php';
 require_once __DIR__ . '/api/weather.php';
 require_once __DIR__ . '/api/currency.php';
 require_once __DIR__ . '/api/photos.php';
+require_once __DIR__ . '/api/destination_guide.php';
 requireLogin();
 
 $trip_id = $_GET['id'] ?? null;
@@ -32,6 +33,9 @@ $weather = getDestinationWeather($trip['destination_city']);
 
 // 2. External API #4: Unsplash Photo
 $photo = getDestinationPhoto($trip['destination_city']);
+
+// 3b. External API #5: Wikipedia Destination Guide
+$guide = getDestinationGuide($trip['destination_city']);
 
 // 3. Handle adding an activity/expense with API #2 (Currency Conversion)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_activity'])) {
@@ -94,13 +98,10 @@ require_once __DIR__ . '/includes/header.php';
                 <?= htmlspecialchars($trip['destination_city']) ?>
             </span>
             <div class="d-flex">
-                <!-- API #5: Email Itinerary Button -->
-                <form method="POST" action="api/send_itinerary.php" class="d-inline">
-                    <input type="hidden" name="trip_id" value="<?= $trip['id'] ?>">
-                    <button type="submit" class="btn btn-sm btn-primary me-1">
-                        <i class="bi bi-envelope-fill"></i> Email Itinerary (API #5)
-                    </button>
-                </form>
+                <!-- API #5: Wikipedia Destination Guide Badge -->
+                <span class="badge bg-success me-1 py-2 px-3" style="font-size:.85rem;">
+                    <i class="bi bi-book-fill"></i> Wikipedia Guide (API #5)
+                </span>
                 <a href="trip_edit.php?id=<?= $trip['id'] ?>" class="btn btn-sm btn-light me-1"><i
                         class="bi bi-pencil"></i> Edit</a>
                 <a href="trips.php" class="btn btn-sm btn-outline-light"><i class="bi bi-arrow-left"></i> Back</a>
@@ -123,27 +124,35 @@ require_once __DIR__ . '/includes/header.php';
     </div>
 </div>
 
-<!-- API #5 Email Status Alert -->
-<?php if (isset($_GET['email_status'])): ?>
-    <?php if ($_GET['email_status'] === 'success'): ?>
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <i class="bi bi-check-circle-fill"></i> <strong>Itinerary Emailed!</strong> A summary has been dispatched via Resend
-            API (API #5) to your inbox.
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    <?php elseif ($_GET['email_status'] === 'error'): ?>
-        <div class="alert alert-warning alert-dismissible fade show" role="alert">
-            <i class="bi bi-exclamation-triangle-fill"></i> <strong>Email Notice:</strong> Resend sandbox allows sending emails
-            directly to the account email you signed up with.
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    <?php elseif ($_GET['email_status'] === 'no_key'): ?>
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            <i class="bi bi-x-circle-fill"></i> Resend API key is missing in <code>.env</code>.
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    <?php endif; ?>
-<?php endif; ?>
+<!-- API #5: Wikipedia Destination Guide Card -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+        <h6 class="mb-0"><i class="bi bi-book text-success"></i> Destination Guide (API #5 &mdash; Wikipedia REST API)</h6>
+        <span class="badge bg-success-subtle text-success border">Wikipedia</span>
+    </div>
+    <div class="card-body">
+        <?php if ($guide): ?>
+            <div class="row align-items-start g-3">
+                <?php if ($guide['thumbnail']): ?>
+                <div class="col-auto">
+                    <img src="<?= htmlspecialchars($guide['thumbnail']) ?>" alt="<?= htmlspecialchars($guide['title']) ?>"
+                        class="rounded shadow-sm" style="width:120px;height:90px;object-fit:cover;">
+                </div>
+                <?php endif; ?>
+                <div class="col">
+                    <h5 class="mb-1 fw-bold"><?= htmlspecialchars($guide['title']) ?></h5>
+                    <p class="text-muted mb-2 small"><?= htmlspecialchars($guide['description']) ?></p>
+                    <p class="mb-2" style="font-size:.92rem;"><?= htmlspecialchars(mb_substr($guide['extract'], 0, 300)) ?>...</p>
+                    <a href="<?= htmlspecialchars($guide['page_url']) ?>" target="_blank" class="btn btn-sm btn-outline-success">
+                        <i class="bi bi-box-arrow-up-right"></i> Read More on Wikipedia &rarr;
+                    </a>
+                </div>
+            </div>
+        <?php else: ?>
+            <p class="text-muted mb-0"><i class="bi bi-exclamation-triangle"></i> Guide unavailable for this destination city.</p>
+        <?php endif; ?>
+    </div>
+</div>
 
 <!-- API Widgets Row -->
 <div class="row g-3 mb-4">

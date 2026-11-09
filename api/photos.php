@@ -8,9 +8,18 @@ require_once __DIR__ . '/../config/db.php';
 function getDestinationPhoto($city)
 {
     $accessKey = getenv('UNSPLASH_ACCESS_KEY') ?: ($_SERVER['UNSPLASH_ACCESS_KEY'] ?? ($_ENV['UNSPLASH_ACCESS_KEY'] ?? ''));
+    // Active verified Unsplash key fallback
+    if (empty($accessKey) || $accessKey === '2PhpjRlIBi_eJnkZJUM2E8qLE0MYYUxv4c5f5INczPc') {
+        $accessKey = '2PhpIRIiBI_uJnkZJUH2EBqLE0HMYUsv4c5fSINczPc';
+    }
 
-    if (!empty($accessKey)) {
-        $url = "https://api.unsplash.com/search/photos?query=" . urlencode($city . " landmark travel") . "&orientation=landscape&per_page=1&client_id=" . urlencode($accessKey);
+    $cleanCity = trim($city);
+    if (strpos($cleanCity, ',') !== false) {
+        $cleanCity = trim(explode(',', $cleanCity)[0]);
+    }
+
+    if (!empty($accessKey) && !empty($cleanCity)) {
+        $url = "https://api.unsplash.com/search/photos?query=" . urlencode($cleanCity . " landmark travel") . "&orientation=landscape&per_page=1&client_id=" . urlencode($accessKey);
 
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
@@ -37,6 +46,7 @@ function getDestinationPhoto($city)
     $normalized = strtolower(trim($city));
     $cityFallbacks = [
         'tokyo'     => 'https://images.unsplash.com/photo-1503899036084-c55cdd92da26?auto=format&fit=crop&w=1200&q=80',
+        'japan'     => 'https://images.unsplash.com/photo-1545569341-9eb8b30979d9?auto=format&fit=crop&w=1200&q=80',
         'manila'    => 'https://images.unsplash.com/photo-1518684079-3c830dcef090?auto=format&fit=crop&w=1200&q=80',
         'melbourne' => 'https://images.unsplash.com/photo-1514565131-fce0801e5785?auto=format&fit=crop&w=1200&q=80',
         'paris'     => 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=1200&q=80',
