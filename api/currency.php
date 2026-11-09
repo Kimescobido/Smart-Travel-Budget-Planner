@@ -10,9 +10,10 @@ function convertCurrency($amount, $fromCurrency, $toCurrency)
         return floatval($amount);
     }
 
-    $apiKey = getenv('EXCHANGE_RATE_API_KEY') ?: '8f71d44b42a4a6dbc77deaf8';
-    if (empty($apiKey)) {
-        return floatval($amount); // fallback
+    $apiKey = getenv('EXCHANGE_RATE_API_KEY') ?: ($_SERVER['EXCHANGE_RATE_API_KEY'] ?? ($_ENV['EXCHANGE_RATE_API_KEY'] ?? ''));
+    // If empty or if set to the old typo key (44b instead of 64b), use the verified active key
+    if (empty($apiKey) || $apiKey === '8f71d44b42a4a6dbc77deaf8') {
+        $apiKey = '8f71d64b42a4a6dbc77deaf8';
     }
 
     $url = "https://v6.exchangerate-api.com/v6/" . urlencode($apiKey) . "/pair/" . urlencode($fromCurrency) . "/" . urlencode($toCurrency) . "/" . urlencode($amount);
