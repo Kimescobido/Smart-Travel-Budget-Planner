@@ -7,31 +7,39 @@ require_once __DIR__ . '/../config/db.php';
  */
 function getDestinationWeather($city)
 {
-    $apiKey = getenv('OPENWEATHER_API_KEY') ?: '9eb558168ef7f1dc6915b700e015af95';
+    $apiKey = getenv('OPENWEATHER_API_KEY') ?: ($_SERVER['OPENWEATHER_API_KEY'] ?? ($_ENV['OPENWEATHER_API_KEY'] ?? '9eb558168ef7f1dc6913b700e0158f95'));
     if (empty($apiKey) || empty($city)) {
         return null;
     }
 
-    $url = "https://api.openweathermap.org/data/2.5/weather?q=" . urlencode($city) . "&units=metric&appid=" . urlencode($apiKey);
+    $citiesToTry = [trim($city)];
+    if (strpos($city, ',') !== false) {
+        $parts = explode(',', $city);
+        $citiesToTry[] = trim($parts[0]);
+    }
 
-    $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, $url);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_TIMEOUT, 5);
-    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // For local XAMPP environments
-    $response = curl_exec($ch);
-    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    curl_close($ch);
+    foreach ($citiesToTry as $queryCity) {
+        $url = "https://api.openweathermap.org/data/2.5/weather?q=" . urlencode($queryCity) . "&units=metric&appid=" . urlencode($apiKey);
 
-    if ($httpCode === 200 && $response) {
-        $data = json_decode($response, true);
-        return [
-            'temp' => round($data['main']['temp']),
-            'condition' => ucfirst($data['weather'][0]['description'] ?? 'Clear'),
-            'icon' => $data['weather'][0]['icon'] ?? '01d',
-            'humidity' => $data['main']['humidity'] ?? 0,
-            'wind' => $data['wind']['speed'] ?? 0
-        ];
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 5);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // For local XAMPP environments
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+
+        if ($httpCode === 200 && $response) {
+            $data = json_decode($response, true);
+            return [
+                'temp' => round($data['main']['temp']),
+                'condition' => ucfirst($data['weather'][0]['description'] ?? 'Clear'),
+                'icon' => $data['weather'][0]['icon'] ?? '01d',
+                'humidity' => $data['main']['humidity'] ?? 0,
+                'wind' => $data['wind']['speed'] ?? 0
+            ];
+        }
     }
 
     return null;
